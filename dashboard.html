@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arcane Bazaar — Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="brand-mark">⚜</span>
+        <span class="brand-name">Arcane Bazaar</span>
+      </div>
+      <div class="auth-ctrls">
+        <a href="index.html" id="btn-back-home" class="btn btn-ghost">Retour au site</a>
+        <button id="btn-logout" class="btn btn-ghost">Se déconnecter</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <button class="sidebar-link current" data-panel="listing">📃 Listing</button>
+        <button class="sidebar-link" data-panel="create">✚ Créer produit</button>
+      </nav>
+    </aside>
+    <div class="main-content">
+      <section id="dashboard-listing" class="dashboard-panel">
+        <h2>Listing Produits</h2>
+        <div id="admin-check" class="error hidden"></div>
+        <table class="dashboard-table" id="products-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nom</th>
+              <th>Catégorie</th>
+              <th>Élément</th>
+              <th>Prix</th>
+              <th>Rareté</th>
+              <th>Puissance</th>
+              <th>Finesse</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody><!-- Liste produits JS --></tbody>
+        </table>
+      </section>
+      <section id="dashboard-create" class="dashboard-panel hidden">
+        <h2>Créer un produit</h2>
+        <form id="create-product-form">
+          <div class="field-row field-row-3">
+            <div class="field">
+              <label for="prod-name">Nom</label>
+              <input id="prod-name" name="name" type="text" required />
+            </div>
+            <div class="field">
+              <label for="prod-slug">Slug</label>
+              <input id="prod-slug" name="slug" type="text" required />
+            </div>
+            <div class="field">
+              <label for="prod-price">Prix (gils)</label>
+              <input id="prod-price" name="price_gils" type="number" min="0" step="1" required />
+            </div>
+          </div>
+          <div class="field-row field-row-3">
+            <div class="field">
+              <label for="prod-type">Type</label>
+              <select id="prod-type" name="type" required>
+                <option value="elixir">Élixir</option>
+                <option value="baume">Baume</option>
+                <option value="artefact">Artefact</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="prod-category">Catégorie</label>
+              <select id="prod-category" name="category_id" required></select>
+            </div>
+            <div class="field">
+              <label for="prod-element">Élément</label>
+              <select id="prod-element" name="element_id" required></select>
+            </div>
+          </div>
+          <div class="field-row field-row-3">
+            <div class="field">
+              <label for="prod-rarete">Rareté</label>
+              <select id="prod-rarete" name="rarity" required>
+                <option value="Commun">Commun</option>
+                <option value="Rare" selected>Rare</option>
+                <option value="Épique">Épique</option>
+                <option value="Légendaire">Légendaire</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="prod-power">Puissance</label>
+              <input id="prod-power" name="power" type="number" min="0" max="10" value="3" required />
+            </div>
+            <div class="field">
+              <label for="prod-finesse">Finesse</label>
+              <input id="prod-finesse" name="finesse" type="number" min="0" max="10" value="3" required />
+            </div>
+          </div>
+          <div class="field">
+            <label for="prod-short">Description courte</label>
+            <input id="prod-short" name="short_description" type="text" maxlength="128" />
+          </div>
+          <div class="field">
+            <label for="prod-long">Description longue</label>
+            <textarea id="prod-long" name="long_description" rows="3"></textarea>
+          </div>
+          <div class="field">
+            <label for="prod-image">Image principale</label>
+            <input id="prod-image" name="image" type="file" accept="image/*" />
+            <div id="prod-image-preview" class="image-preview hidden"></div>
+            <small class="muted" style="display:block;margin-top:4px;">Format accepté : JPG, PNG, WebP (max 5MB)</small>
+          </div>
+          <h3>Profil de saveurs</h3>
+          <div class="field-row field-row-3">
+            <div class="field">
+              <label for="prod-flavor-type">Type de saveur</label>
+              <input id="prod-flavor-type" name="flavor_type" type="text" />
+            </div>
+            <div class="field">
+              <label for="prod-flavor-profile">Profil de saveur</label>
+              <input id="prod-flavor-profile" name="flavor_profile" type="text" />
+            </div>
+            <div class="field">
+              <label for="prod-color">Couleur</label>
+              <input id="prod-color" name="color" type="text" />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="prod-tasting-notes">Notes de dégustation</label>
+              <textarea id="prod-tasting-notes" name="tasting_notes" rows="2"></textarea>
+            </div>
+            <div class="field">
+              <label for="prod-food-pairing">Accords mets</label>
+              <textarea id="prod-food-pairing" name="food_pairing" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="field">
+            <label for="prod-signature-cocktail">Cocktail signature</label>
+            <input id="prod-signature-cocktail" name="signature_cocktail" type="text" />
+          </div>
+          <div class="field-row field-row-submit">
+            <div class="field field-checkbox">
+              <label><input id="prod-published" name="is_published" type="checkbox" checked /> Publier</label>
+            </div>
+            <div class="field field-spacer"></div>
+            <div class="field field-submit">
+              <button type="submit" class="btn btn-primary">Créer</button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </div>
+  </div>
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-col">
+        <div class="brand small"><span class="brand-mark">⚜</span><span class="brand-name">Arcane Bazaar</span></div>
+        <p>Demo e-commerce fantasy. Données servies par Supabase.</p>
+      </div>
+      <div class="footer-col">
+        <a href="#" class="footer-link">Mentions</a>
+        <a href="#" class="footer-link">Conditions</a>
+        <a href="#" class="footer-link">Contact</a>
+      </div>
+      <div class="footer-col">
+        <p>Crédits visuels: Unsplash / œuvres fictives.</p>
+      </div>
+    </div>
+  </footer>
+  <script src="config.js"></script>
+  <script type="module" src="dashboard.js"></script>
+</body>
+
+</html>
