@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const cfg = window.APP_CONFIG;
 let adminCheck, btnLogout;
 let productsTable, usersTable;
-let panelButtons, sectionListing, sectionCreate;
+let panelButtons, sectionListing, sectionCreate, sectionCreateCategory;
 let supabase = null;
 let currentSession = null;
 let currentUser = null;
@@ -19,7 +19,10 @@ function showError(msg) {
   adminCheck.textContent = msg;
   adminCheck.classList.remove("hidden");
   sectionListing.classList.add("hidden");
+  sectionCreate?.classList.add("hidden");
+  sectionCreateCategory?.classList.add("hidden");
 }
+
 
 async function loadProfile() {
   if (!currentUser) { currentProfile = null; isAdmin = false; return; }
@@ -111,7 +114,7 @@ async function fetchProductsAdmin() {
       <td style="text-align:center">${prod.finesse ?? ''}</td>
       <td>${statusToggleBtn(prod)}</td>
       <td>
-        <button class="btn btn-delete" data-id="${prod.id}" title="Modifier">✏️</button>
+        <button class="btn btn-edit" data-id="${prod.id}" title="Modifier">✏️</button>
         <button class="btn btn-delete" data-delete="${prod.id}" data-name="${prod.name}" title="Supprimer">🗑️</button>
       </td>
     </tr>`;
@@ -262,6 +265,73 @@ async function init() {
   adminCheck.classList.add("hidden");
   sectionListing.classList.remove("hidden");
   await fetchProductsAdmin();
+
+  // --- Formulaire d'ajout de catégorie ---
+  const addCatForm = document.getElementById('add-category-form');
+  const catAddMsg = document.getElementById('cat-add-msg');
+  const catNameInput = document.getElementById('cat-name');
+  const catSlugInput = document.getElementById('cat-slug');
+
+  // Auto-slug pour la catégorie
+  if (catNameInput && catSlugInput) {
+    let catSlugManualEdit = false;
+
+    catNameInput.addEventListener('input', () => {
+      if (!catSlugManualEdit) {
+        const slug = catNameInput.value.toLowerCase()
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+        catSlugInput.value = slug;
+      }
+    });
+
+    catSlugInput.addEventListener('input', () => {
+      catSlugManualEdit = catSlugInput.value.length > 0;
+    });
+  }
+
+  if (addCatForm && catAddMsg) {
+    addCatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      catAddMsg.textContent = '';
+
+      const name = addCatForm['name'].value.trim();
+      const slug = addCatForm['slug'].value.trim();
+
+      if (!name || !slug) {
+        catAddMsg.textContent = "Nom et slug requis.";
+        return;
+      }
+
+      try {
+        const { error } = await supabase
+          .from('categories')
+          .insert([{ name, slug }]);
+
+        if (error) {
+          if (error.code === '23505') {
+            // unique_violation sur slug
+            catAddMsg.textContent = "Ce slug existe déjà, choisis-en un autre.";
+          } else {
+            catAddMsg.textContent = "Erreur : " + error.message;
+          }
+        } else {
+          catAddMsg.textContent = "Catégorie ajoutée !";
+
+          // On rafraîchit la liste des catégories pour le <select> produit
+          await fetchCategories();
+
+          // Reset du formulaire
+          addCatForm.reset();
+          if (catSlugInput) catSlugInput.value = '';
+        }
+      } catch (err) {
+        catAddMsg.textContent = "Erreur : " + (err.message || err);
+      }
+    });
+  }
+
 
   // Génération automatique du slug depuis le nom
   const prodNameInput = document.getElementById('prod-name');
@@ -448,18 +518,27 @@ async function init() {
     btn.addEventListener("click", () => {
       panelButtons.forEach(b => b.classList.remove("current"));
       btn.classList.add("current");
+
       const panel = btn.dataset.panel;
+
       if (panel === "listing") {
         sectionListing.classList.remove("hidden");
         sectionCreate.classList.add("hidden");
+        sectionCreateCategory.classList.add("hidden");
       } else if (panel === "create") {
-        setFormToCreateMode(); // <- important pour quitter le mode édition
+        setFormToCreateMode(); // reset form produit
         sectionCreate.classList.remove("hidden");
         sectionListing.classList.add("hidden");
+        sectionCreateCategory.classList.add("hidden");
+      } else if (panel === "create-category") {
+        sectionCreateCategory.classList.remove("hidden");
+        sectionListing.classList.add("hidden");
+        sectionCreate.classList.add("hidden");
       }
-
     });
   });
+
+  // Logout handler
   btnLogout?.addEventListener("click", async () => {
     await supabase.auth.signOut();
     window.location.href = "index.html";
@@ -541,5 +620,7 @@ window.addEventListener('DOMContentLoaded', () => {
   panelButtons = document.querySelectorAll(".sidebar-link");
   sectionListing = document.getElementById("dashboard-listing");
   sectionCreate = document.getElementById("dashboard-create");
+  sectionCreateCategory = document.getElementById("dashboard-create-category"); 
   init();
 });
+

@@ -27,6 +27,7 @@
       <nav class="sidebar-nav">
         <button class="sidebar-link current" data-panel="listing">📃 Listing</button>
         <button class="sidebar-link" data-panel="create">✚ Créer produit</button>
+        <button class="sidebar-link" data-panel="create-category">📂 Créer catégorie</button>
       </nav>
     </aside>
     <div class="main-content">
@@ -158,6 +159,27 @@
             </div>
           </div>
         </form>
+      </section>
+      <section id="dashboard-create-category" class="dashboard-panel hidden">
+        <h3>Gérer les catégories</h3>
+        <form id="add-category-form" class="card small">
+          <div class="field-row field-row-3">
+            <div class="field">
+              <label for="cat-name">Nom de la catégorie</label>
+              <input id="cat-name" name="name" type="text" required />
+            </div>
+            <div class="field">
+              <label for="cat-slug">Slug</label>
+              <input id="cat-slug" name="slug" type="text" required />
+              <small class="muted">Généré automatiquement à partir du nom, modifiable.</small>
+            </div>
+            <div class="field field-submit" style="align-self:flex-end;">
+              <button type="submit" class="btn btn-secondary">Ajouter</button>
+            </div>
+          </div>
+          <p id="cat-add-msg" class="muted" style="margin-top:0.5rem;"></p>
+        </form>
+
       </section>
     </div>
   </div>

@@ -59,6 +59,7 @@ let currentUser = null;
 let currentProfile = null;
 let isAdmin = false;
 let authMode = 'signin';
+let catalogueView = 'cards'; // 'cards' ou 'list'
 
 function showSetup() {
   setupEl?.classList.remove("hidden");
@@ -71,6 +72,7 @@ function setLoading(v) {
   loadingEl.classList.toggle("hidden", !v);
 }
 function setError(msg) {
+  if (!errorEl) return; // Ajouté pour éviter l'erreur si errorEl est null
   if (!msg) { errorEl.classList.add("hidden"); errorEl.textContent = ""; return; }
   errorEl.textContent = msg;
   errorEl.classList.remove("hidden");
@@ -97,7 +99,7 @@ function rarityToClass(r) {
 }
 
 function rarityRank(r) {
-  const s = (r||"")
+  const s = (r || "")
     .toString()
     .toLowerCase()
     .normalize("NFD")
@@ -133,42 +135,52 @@ function setFlavorRow(ddEl, value) {
   return has;
 }
 
-function productCard(p) {
+function productCard(p, view = 'cards') {
   const img = pickMainImage(p.product_images);
-  // Debug: vérifier les images du produit
-  if (!p.product_images || p.product_images.length === 0) {
-    console.log('Produit sans images:', p.name, p.id);
-  } else {
-    console.log('Produit avec images:', p.name, p.product_images);
-  }
   const cat = categories.find(c => c.id === p.category_id);
   const elt = elements.find(e => e.id === p.element_id);
   const rarityCls = rarityToClass(p.rarity);
   const el = document.createElement('article');
   el.className = 'card';
-  el.innerHTML = `
-    <div class="card-media"><img loading="lazy" src="${img}" alt="${p.name}" onerror="console.error('Erreur chargement image:', '${img}')" /></div>
-    <div class="card-body">
-      <div class="card-row">
-        <div>
-          <div class="card-title">${p.name}</div>
-          <div class="card-sub">${cat?.name ?? ''} · ${elt?.icon ?? ''} ${elt?.name ?? ''}</div>
-        </div>
-        <div class="badges">
-          <span class="badge ${rarityCls}">${p.rarity}</span>
-        </div>
-      </div>
-      <div class="card-row">
+  if (view === 'list') {
+    el.innerHTML = `
+      <div class="card-media"><img loading="lazy" src="${img}" alt="${p.name}" /></div>
+      <div class="card-body">
+        <div class="card-title">${p.name}</div>
+        <div class="card-sub">${cat?.name ?? ''} · ${elt?.icon ?? ''} ${elt?.name ?? ''}</div>
         <div class="muted">${p.flavor_profile ?? ''}</div>
       </div>
-      <div class="card-row">
-        <div class="price">${gils(p.price_gils)} gils</div>
-        <div class="btn-row">
-          <button class="btn btn-primary" data-open="${p.id}">Voir</button>
+      <div class="card-extra">
+        <span class="badge ${rarityCls}">${p.rarity}</span>
+        <span class="price">${gils(p.price_gils)} gils</span>
+        <button class="btn btn-primary" data-open="${p.id}">Voir</button>
+      </div>
+    `;
+  } else {
+    el.innerHTML = `
+      <div class="card-media"><img loading="lazy" src="${img}" alt="${p.name}" onerror="console.error('Erreur chargement image:', '${img}')" /></div>
+      <div class="card-body">
+        <div class="card-row">
+          <div>
+            <div class="card-title">${p.name}</div>
+            <div class="card-sub">${cat?.name ?? ''} · ${elt?.icon ?? ''} ${elt?.name ?? ''}</div>
+          </div>
+          <div class="badges">
+            <span class="badge ${rarityCls}">${p.rarity}</span>
+          </div>
+        </div>
+        <div class="card-row">
+          <div class="muted">${p.flavor_profile ?? ''}</div>
+        </div>
+        <div class="card-row">
+          <div class="price">${gils(p.price_gils)} gils</div>
+          <div class="btn-row">
+            <button class="btn btn-primary" data-open="${p.id}">Voir</button>
+          </div>
         </div>
       </div>
-    </div>
-  `;
+    `;
+  }
   el.querySelector('[data-open]')?.addEventListener('click', () => openModal(p));
   return el;
 }
@@ -252,15 +264,15 @@ async function fetchProducts() {
   productCache = data || [];
 
   let items = [...productCache];
-  if (sort === 'rarity-asc') items.sort((a,b) => rarityRank(a.rarity) - rarityRank(b.rarity));
-  if (sort === 'rarity-desc') items.sort((a,b) => rarityRank(b.rarity) - rarityRank(a.rarity));
+  if (sort === 'rarity-asc') items.sort((a, b) => rarityRank(a.rarity) - rarityRank(b.rarity));
+  if (sort === 'rarity-desc') items.sort((a, b) => rarityRank(b.rarity) - rarityRank(a.rarity));
 
   clearEl(catalogueGrid);
   if (items.length === 0) {
     catalogueEmpty.classList.remove('hidden');
   } else {
     catalogueEmpty.classList.add('hidden');
-    items.forEach(p => catalogueGrid.appendChild(productCard(p)));
+    items.forEach(p => catalogueGrid.appendChild(productCard(p, catalogueView)));
   }
 }
 
@@ -369,25 +381,33 @@ async function init() {
   supabase = createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
 
   try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    applySession(sessionData.session);
+    // On tente de récupérer la session, mais ce n'est pas bloquant pour le catalogue
+    let sessionData = null;
+    try {
+      const { data } = await supabase.auth.getSession();
+      sessionData = data;
+    } catch (e) {
+      // ignore
+    }
+    applySession(sessionData?.session);
     await loadProfile();
     await fetchMeta();
-    await fetchFeatured();
-    await fetchProducts();
+    if (featuredGrid) await fetchFeatured();
+    if (catalogueGrid) await fetchProducts();
   } catch (e) {
     setError(e.message || 'Erreur de chargement');
   }
 
-  catSelect.addEventListener('change', fetchProducts);
-  eltSelect.addEventListener('change', fetchProducts);
-  sortSelect.addEventListener('change', fetchProducts);
-  refreshBtn.addEventListener('click', fetchProducts);
+  // Ajoute les listeners seulement si les éléments existent (catalogue.html)
+  if (catSelect) catSelect.addEventListener('change', fetchProducts);
+  if (eltSelect) eltSelect.addEventListener('change', fetchProducts);
+  if (sortSelect) sortSelect.addEventListener('change', fetchProducts);
+  if (refreshBtn) refreshBtn.addEventListener('click', fetchProducts);
 
-  btnLogin?.addEventListener('click', () => { setAuthModeUI('signin'); openAuth(); });
-  btnLogout?.addEventListener('click', async () => { await supabase.auth.signOut(); });
-  authToggle?.addEventListener('click', () => { setAuthModeUI(authMode === 'signin' ? 'signup' : 'signin'); });
-  authSubmit?.addEventListener('click', async () => {
+  if (btnLogin) btnLogin.addEventListener('click', () => { setAuthModeUI('signin'); openAuth(); });
+  if (btnLogout) btnLogout.addEventListener('click', async () => { await supabase.auth.signOut(); });
+  if (authToggle) authToggle.addEventListener('click', () => { setAuthModeUI(authMode === 'signin' ? 'signup' : 'signin'); });
+  if (authSubmit) authSubmit.addEventListener('click', async () => {
     const email = authEmail?.value?.trim();
     const password = authPassword?.value || '';
     const password2 = authPassword2?.value || '';
@@ -414,17 +434,36 @@ async function init() {
   supabase.auth.onAuthStateChange(async (_event, session) => {
     applySession(session);
     await loadProfile();
-    await fetchFeatured();
-    await fetchProducts();
+    if (featuredGrid) await fetchFeatured();
+    if (catalogueGrid) await fetchProducts();
     if (session) closeAuth();
   });
 }
 
 window.addEventListener('DOMContentLoaded', init);
+
+// Gestion du toggle vue cartes/liste
+if (document.getElementById('view-cards') && document.getElementById('view-list')) {
+  const viewCardsBtn = document.getElementById('view-cards');
+  const viewListBtn = document.getElementById('view-list');
+  viewCardsBtn.addEventListener('click', () => {
+    catalogueView = 'cards';
+    document.body.classList.remove('catalogue-list');
+    viewCardsBtn.classList.add('active');
+    viewListBtn.classList.remove('active');
+    fetchProducts();
+  });
+  viewListBtn.addEventListener('click', () => {
+    catalogueView = 'list';
+    document.body.classList.add('catalogue-list');
+    viewListBtn.classList.add('active');
+    viewCardsBtn.classList.remove('active');
+    fetchProducts();
+  });
+}
+
 window.addEventListener('storage', (event) => {
   if (event.key === 'refresh-shop-catalogue') {
-    // Rafraîchir le catalogue sans forcer reload de toute la page :
-    // Pour effet instantané (meilleur UX) mais garde l'état scroll :
     fetchProducts && fetchProducts();
     fetchFeatured && fetchFeatured();
   }

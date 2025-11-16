@@ -27,7 +27,7 @@
       </div>
       <nav class="nav">
         <a href="#home" class="nav-link">Accueil</a>
-        <a href="#catalogue" class="nav-link">Catalogue</a>
+        <a href="catalogue.html" class="nav-link">Catalogue</a>
         <a href="#footer" class="nav-link">Crédits</a>
         <a href="dashboard.html" id="nav-dashboard" class="nav-link hidden">Dashboard</a>
       </nav>
@@ -48,7 +48,7 @@
         <div class="hero-copy">
           <h1 class="hero-title">La Taverne des Artefacts</h1>
           <p class="hero-sub">Élixirs, baumes et reliques forgés aux confins des royaumes. Entrez, voyageur…</p>
-          <a href="#catalogue" class="btn btn-primary">Entrer dans la boutique</a>
+          <a href="catalogue.html" class="btn btn-primary">Entrer dans la boutique</a>
         </div>
       </div>
       <div class="hero-overlay"></div>
@@ -62,43 +62,7 @@
       </div>
     </section>
 
-    <section id="catalogue" class="catalogue" aria-labelledby="catalogue-title">
-      <div class="container">
-        <h2 id="catalogue-title" class="section-title">Catalogue</h2>
-
-        <div class="filters">
-          <div class="filters-row">
-            <label class="filter">
-              <span>Catégorie</span>
-              <select id="filter-category">
-                <option value="all">Toutes</option>
-              </select>
-            </label>
-            <label class="filter">
-              <span>Élément</span>
-              <select id="filter-element">
-                <option value="all">Tous</option>
-              </select>
-            </label>
-            <label class="filter">
-              <span>Tri</span>
-              <select id="sort-select">
-                <option value="price-asc">Prix: croissant</option>
-                <option value="price-desc">Prix: décroissant</option>
-                <option value="rarity-asc">Rareté: commun → légendaire</option>
-                <option value="rarity-desc">Rareté: légendaire → commun</option>
-              </select>
-            </label>
-            <button id="refresh-btn" class="btn btn-ghost" title="Rafraîchir">↻</button>
-          </div>
-        </div>
-
-        <div id="catalogue-grid" class="grid products-grid"></div>
-        <div id="catalogue-empty" class="empty hidden">Aucun résultat pour ces filtres.</div>
-        <div id="loading" class="loading hidden">Chargement…</div>
-        <div id="error" class="error hidden"></div>
-      </div>
-    </section>
+    <!-- Section catalogue supprimée, déplacée dans catalogue.html -->
   </main>
 
   <footer id="footer" class="site-footer">
