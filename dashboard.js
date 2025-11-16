@@ -13,6 +13,8 @@ let categoriesMap = {};
 let elementsMap = {};
 let editingProductId = null;
 let productsCache = [];
+let categoriesTable;
+let editingCategoryId = null;
 
 
 function showError(msg) {
@@ -22,6 +24,7 @@ function showError(msg) {
   sectionCreate?.classList.add("hidden");
   sectionCreateCategory?.classList.add("hidden");
 }
+
 
 
 async function loadProfile() {
@@ -53,14 +56,141 @@ function fillSelectOptions(selectEl, list, opts = {}) {
 let categoriesList = [], elementsList = [];
 
 async function fetchCategories() {
-  const { data, error } = await supabase.from('categories').select('id,name');
-  if (error) { console.error('Erreur chargement catégories:', error); return; }
+  const { data, error } = await supabase
+    .from('categories')
+    .select('id, name, slug, is_active')
+    .order('name', { ascending: true });
+
+  if (error) {
+    console.error('Erreur chargement catégories:', error);
+    categoriesList = [];
+    if (categoriesTable) {
+      categoriesTable.innerHTML = `<tr><td colspan="5"><span class="error">Erreur chargement catégories : ${error.message}</span></td></tr>`;
+    }
+    return;
+  }
+
   categoriesMap = {};
   categoriesList = data || [];
   categoriesList.forEach(cat => { categoriesMap[cat.id] = cat.name; });
-  // Remplir select création
+
+  // Remplir select de création produit
   fillSelectOptions(document.getElementById('prod-category'), categoriesList);
+
+  // Remplir tableau des catégories si présent
+  if (!categoriesTable) return;
+
+  if (!categoriesList.length) {
+    categoriesTable.innerHTML = '<tr><td colspan="5" class="muted">Aucune catégorie.</td></tr>';
+    return;
+  }
+
+  const rows = categoriesList.map((cat, idx) => {
+    const active = cat.is_active !== false; // par défaut true si null/undefined
+    const statusLabel = active ? 'Active' : 'Masquée';
+    const statusClass = active ? 'status-active' : 'status-inactive';
+    const statusStyle = active
+      ? 'background:rgba(60,200,60,0.13);color:#19d444;border:1px solid #1a9548;'
+      : 'background:rgba(255,125,50,0.05);color:#ff9932;border:1px solid #c77b13;';
+
+    return `<tr>
+      <td>${idx + 1}</td>
+      <td>${cat.name}</td>
+      <td><code>${cat.slug}</code></td>
+      <td>
+        <button class="btn btn-cat-status ${statusClass}"
+                data-id="${cat.id}"
+                data-active="${active ? '1' : '0'}"
+                type="button"
+                style="${statusStyle}padding:4px 12px;font-weight:600;font-size:13px">
+          ${statusLabel}
+        </button>
+      </td>
+      <td>
+        <button class="btn btn-edit-cat" data-id="${cat.id}" title="Modifier">✏️</button>
+        <button class="btn btn-delete-cat" data-id="${cat.id}" data-name="${cat.name}" title="Supprimer">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  categoriesTable.innerHTML = rows;
+
+  // Toggle actif / masqué
+  categoriesTable.querySelectorAll('.btn-cat-status').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      const isActive = btn.dataset.active === '1';
+      btn.disabled = true;
+      btn.textContent = '...';
+      btn.style.opacity = '0.7';
+
+      const { error } = await supabase
+        .from('categories')
+        .update({ is_active: !isActive })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Erreur toggle catégorie:', error);
+        alert('Erreur lors de la mise à jour du statut : ' + error.message);
+      }
+
+      await fetchCategories(); // rafraîchit tableau + select
+    });
+  });
+
+  // Édition
+  categoriesTable.querySelectorAll('.btn-edit-cat').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      const cat = categoriesList.find(c => c.id === id);
+      if (!cat) {
+        alert('Catégorie introuvable pour modification.');
+        return;
+      }
+      setCategoryFormToEditMode(cat);
+
+      // montrer le panneau catégories
+      sectionCreateCategory.classList.remove('hidden');
+      sectionListing.classList.add('hidden');
+      sectionCreate.classList.add('hidden');
+      document.querySelectorAll('.sidebar-link').forEach(b => b.classList.remove('current'));
+      document.querySelector('[data-panel="create-category"]')?.classList.add('current');
+    });
+  });
+
+  // Suppression
+  categoriesTable.querySelectorAll('.btn-delete-cat').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      const name = btn.dataset.name || 'cette catégorie';
+
+      if (!confirm(`Supprimer "${name}" ?\n\nAttention : si des produits utilisent cette catégorie, la suppression peut échouer (contrainte de clé étrangère).`)) {
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '...';
+      btn.style.opacity = '0.7';
+
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Erreur suppression catégorie:', error);
+        alert('Erreur lors de la suppression : ' + error.message);
+        btn.disabled = false;
+        btn.textContent = '🗑️';
+        btn.style.opacity = '1';
+        return;
+      }
+
+      await fetchCategories();
+    });
+  });
 }
+
 async function fetchElements() {
   const { data, error } = await supabase.from('elements').select('id,name,icon');
   if (error) { console.error('Erreur éléments:', error); return; }
@@ -305,32 +435,44 @@ async function init() {
       }
 
       try {
-        const { error } = await supabase
-          .from('categories')
-          .insert([{ name, slug }]);
+        let error = null;
+
+        if (!editingCategoryId) {
+          // Création
+          ({ error } = await supabase
+            .from('categories')
+            .insert([{ name, slug }]));
+        } else {
+          // Modification
+          ({ error } = await supabase
+            .from('categories')
+            .update({ name, slug })
+            .eq('id', editingCategoryId));
+        }
 
         if (error) {
           if (error.code === '23505') {
-            // unique_violation sur slug
             catAddMsg.textContent = "Ce slug existe déjà, choisis-en un autre.";
           } else {
             catAddMsg.textContent = "Erreur : " + error.message;
           }
         } else {
-          catAddMsg.textContent = "Catégorie ajoutée !";
+          catAddMsg.textContent = editingCategoryId
+            ? "Catégorie modifiée."
+            : "Catégorie ajoutée !";
 
-          // On rafraîchit la liste des catégories pour le <select> produit
+          // Rafraîchir le select + le tableau
           await fetchCategories();
 
-          // Reset du formulaire
-          addCatForm.reset();
-          if (catSlugInput) catSlugInput.value = '';
+          // Retour au mode création
+          setCategoryFormToCreateMode();
         }
       } catch (err) {
         catAddMsg.textContent = "Erreur : " + (err.message || err);
       }
     });
   }
+
 
 
   // Génération automatique du slug depuis le nom
@@ -518,7 +660,6 @@ async function init() {
     btn.addEventListener("click", () => {
       panelButtons.forEach(b => b.classList.remove("current"));
       btn.classList.add("current");
-
       const panel = btn.dataset.panel;
 
       if (panel === "listing") {
@@ -526,17 +667,19 @@ async function init() {
         sectionCreate.classList.add("hidden");
         sectionCreateCategory.classList.add("hidden");
       } else if (panel === "create") {
-        setFormToCreateMode(); // reset form produit
+        setFormToCreateMode();
         sectionCreate.classList.remove("hidden");
         sectionListing.classList.add("hidden");
         sectionCreateCategory.classList.add("hidden");
       } else if (panel === "create-category") {
+        setCategoryFormToCreateMode();
         sectionCreateCategory.classList.remove("hidden");
         sectionListing.classList.add("hidden");
         sectionCreate.classList.add("hidden");
       }
     });
   });
+
 
   // Logout handler
   btnLogout?.addEventListener("click", async () => {
@@ -564,6 +707,42 @@ function setFormToCreateMode() {
   }
 
   editingProductId = null;
+}
+
+function setCategoryFormToCreateMode() {
+  const form = document.getElementById('add-category-form');
+  if (!form) return;
+
+  const title = document.querySelector('#dashboard-create-category h3');
+  if (title) title.textContent = 'Gérer les catégories';
+
+  const submitBtn = form.querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.textContent = 'Ajouter';
+
+  form.reset();
+  editingCategoryId = null;
+
+  const msg = document.getElementById('cat-add-msg');
+  if (msg) msg.textContent = '';
+}
+
+function setCategoryFormToEditMode(cat) {
+  const form = document.getElementById('add-category-form');
+  if (!form || !cat) return;
+
+  const title = document.querySelector('#dashboard-create-category h3');
+  if (title) title.textContent = `Modifier la catégorie`;
+
+  const submitBtn = form.querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.textContent = 'Enregistrer';
+
+  form['name'].value = cat.name || '';
+  form['slug'].value = cat.slug || '';
+
+  const msg = document.getElementById('cat-add-msg');
+  if (msg) msg.textContent = '';
+
+  editingCategoryId = cat.id;
 }
 
 function setFormToEditMode(product) {
@@ -620,7 +799,9 @@ window.addEventListener('DOMContentLoaded', () => {
   panelButtons = document.querySelectorAll(".sidebar-link");
   sectionListing = document.getElementById("dashboard-listing");
   sectionCreate = document.getElementById("dashboard-create");
-  sectionCreateCategory = document.getElementById("dashboard-create-category"); 
+  sectionCreateCategory = document.getElementById("dashboard-create-category");
+  categoriesTable = document.getElementById("categories-table")?.querySelector("tbody"); // 🔹
   init();
 });
+
 
