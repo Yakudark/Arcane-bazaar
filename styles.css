@@ -119,8 +119,8 @@ body {
       rgba(12, 18, 32, 0.6),
       rgba(12, 18, 32, 0.9)
     ),
-    url("https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1400&auto=format&fit=crop");
-  background-position: center;
+    url("./assets/image_une_site.png");
+  background-position: top center;
   background-size: cover;
 }
 .hero-inner {
@@ -153,6 +153,14 @@ body {
     transparent 60%
   );
 }
+
+.brand-mark {
+  width: 38px;      /* Taille d’icône */
+  height: 38px;
+  object-fit: contain;
+  display: inline-block;
+}
+
 
 /* Sections */
 .section-title {
