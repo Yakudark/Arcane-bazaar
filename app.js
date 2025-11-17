@@ -10,6 +10,7 @@ const loadingEl = document.getElementById("loading");
 const errorEl = document.getElementById("error");
 const catSelect = document.getElementById("filter-category");
 const eltSelect = document.getElementById("filter-element");
+const licenceSelect = document.getElementById("filter-licence"); // Ajouté
 const sortSelect = document.getElementById("sort-select");
 const refreshBtn = document.getElementById("refresh-btn");
 
@@ -60,6 +61,10 @@ let currentProfile = null;
 let isAdmin = false;
 let authMode = 'signin';
 let catalogueView = 'cards'; // 'cards' ou 'list'
+
+const ITEMS_PER_PAGE = 12;
+let currentPage = 1;
+let filteredProducts = [];
 
 function showSetup() {
   setupEl?.classList.remove("hidden");
@@ -242,7 +247,7 @@ async function fetchProducts() {
     .from('products')
     .select('*, product_images(url,is_main)')
     .limit(100);
-  q = q.eq('is_published', true); // Toujours filtrer, même pour les admins
+  q = q.eq('is_published', true);
 
   if (selectedCatSlug && selectedCatSlug !== 'all') {
     const cat = categories.find(c => c.slug === selectedCatSlug);
@@ -252,10 +257,8 @@ async function fetchProducts() {
     q = q.eq('element_id', selectedEltId);
   }
 
-  // Base server sorting for price where possible, rarity will be client-side
   if (sort === 'price-asc') q = q.order('price_gils', { ascending: true });
   if (sort === 'price-desc') q = q.order('price_gils', { ascending: false });
-  // ensure deterministic order
   q = q.order('created_at', { ascending: false, nullsFirst: false });
 
   const { data, error } = await q;
@@ -267,13 +270,79 @@ async function fetchProducts() {
   if (sort === 'rarity-asc') items.sort((a, b) => rarityRank(a.rarity) - rarityRank(b.rarity));
   if (sort === 'rarity-desc') items.sort((a, b) => rarityRank(b.rarity) - rarityRank(a.rarity));
 
-  clearEl(catalogueGrid);
-  if (items.length === 0) {
+  renderCatalogue(items);
+}
+
+function renderCatalogue(products) {
+  filteredProducts = products;
+  currentPage = 1;
+  renderCataloguePage();
+  updatePagination();
+}
+
+function renderCataloguePage() {
+  const grid = document.getElementById('catalogue-grid');
+  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  const end = start + ITEMS_PER_PAGE;
+  const pageItems = filteredProducts.slice(start, end);
+
+  clearEl(grid);
+  if (pageItems.length === 0) {
     catalogueEmpty.classList.remove('hidden');
   } else {
     catalogueEmpty.classList.add('hidden');
-    items.forEach(p => catalogueGrid.appendChild(productCard(p, catalogueView)));
+    pageItems.forEach(p => grid.appendChild(productCard(p, catalogueView)));
   }
+}
+
+const prevBtn = document.getElementById('prev-page-float');
+const nextBtn = document.getElementById('next-page-float');
+function updatePagination() {
+  const pagination = document.getElementById('pagination');
+  const info = document.getElementById('pagination-info');
+  const infoTop = document.getElementById('pagination-info-top');
+  const total = filteredProducts.length;
+  const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+
+  // Affiche/masque les boutons flottants selon besoin
+  prevBtn.disabled = currentPage === 1;
+  nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+  prevBtn.style.display = totalPages > 1 ? '' : 'none';
+  nextBtn.style.display = totalPages > 1 ? '' : 'none';
+
+  if (totalPages <= 1) {
+    pagination.classList.add('hidden');
+    if (info) info.textContent = '';
+    if (infoTop) infoTop.textContent = '';
+    return;
+  }
+  pagination.classList.remove('hidden');
+  const txt = `Page ${currentPage} sur ${totalPages}`;
+  if (info) info.textContent = txt;
+  if (infoTop) infoTop.textContent = txt;
+  prevBtn.disabled = currentPage === 1;
+  nextBtn.disabled = currentPage === totalPages;
+}
+
+// Ajout des listeners de pagination flottante
+if (prevBtn && nextBtn) {
+  prevBtn.addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderCataloguePage();
+      updatePagination();
+      window.scrollTo({ top: 0, behavior: 'smooth' }); // Remonte en haut
+    }
+  });
+  nextBtn.addEventListener('click', () => {
+    const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderCataloguePage();
+      updatePagination();
+      window.scrollTo({ top: 0, behavior: 'smooth' }); // Remonte en haut
+    }
+  });
 }
 
 async function openModal(p) {
