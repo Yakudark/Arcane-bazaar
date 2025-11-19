@@ -537,3 +537,43 @@ window.addEventListener('storage', (event) => {
     fetchFeatured && fetchFeatured();
   }
 });
+
+// document.querySelectorAll('.category-card-filter-btn').forEach(btn => {
+//   btn.addEventListener('click', function () {
+//     const catSlug = this.dataset.category;
+//     if (catSelect) {
+//       catSelect.value = catSlug;
+//       fetchProducts();
+//     }
+//     document.querySelectorAll('.category-card-filter-btn').forEach(b => b.classList.remove('active'));
+//     this.classList.add('active');
+//   });
+// });
+// --- Filtres depuis les cartes catégorie ---
+const catCardButtons = document.querySelectorAll('.category-card-filter-btn');
+
+if (catSelect && catCardButtons.length) {
+  catCardButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = (btn.dataset.category || "").toLowerCase().trim();
+
+      // On cherche l'option du select correspondant à la carte
+      const option = Array.from(catSelect.options).find(opt => {
+        const value = (opt.value || "").toLowerCase().trim();
+        const label = (opt.textContent || "").toLowerCase().trim();
+        return value === key || label === key;
+      });
+
+      if (option) {
+        catSelect.value = option.value;
+
+        // On déclenche le même comportement qu'un vrai changement utilisateur
+        catSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+
+      // Bouton actif
+      catCardButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+}

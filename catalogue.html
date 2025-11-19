@@ -96,6 +96,56 @@
             margin: 0.5em 0 0.5em 0;
             letter-spacing: 0.02em;
         }
+
+        /* Styles pour les filtres par catégorie */
+      /* Filtres visuels par catégorie (alimentaires/potions) */
+.category-cards-filter {
+    display: flex;
+    gap: 1.5em;
+    justify-content: center;
+    margin: 1em 0;
+}
+
+.category-card-filter-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.category-card-icon {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 3px solid #c6a75b;
+    overflow: hidden;                  /* on cache ce qui dépasse */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* L'image à l'intérieur : zoom + recadrage */
+.category-card-icon img {
+    width: 150%;       /* >100% = zoom */
+    height: 150%;
+    object-fit: cover; /* remplis le cercle */
+    transform: translate(0, 0); /* tu peux ajuster si tu veux décaler un peu */
+}
+
+/* Effet hover */
+.category-card-filter-btn:hover .category-card-icon img {
+    transform: scale(1.05);
+}
+
+.category-card-filter-btn span {
+    margin-top: 0.5em;
+    color: #c6a75b;
+    font-weight: 600;
+    font-size: 1em;
+}
+
     </style>
 </head>
 
@@ -127,6 +177,24 @@
         <section id="catalogue" class="catalogue" aria-labelledby="catalogue-title">
             <div class="container">
                 <h2 id="catalogue-title" class="section-title">Catalogue</h2>
+
+                <!-- Filtres visuels par catégorie (alimentaires/potions) -->
+                <div id="category-cards-filter" class="category-cards-filter">
+                    <button class="category-card-filter-btn" data-category="alimentaires" title="Filtrer Alimentaires">
+                        <span class="category-card-icon">
+                            <img src="assets/alimentaires.png" alt="Alimentaires">
+                        </span>
+                    </button>
+
+                
+                <button class="category-card-filter-btn" data-category="potions" title="Filtrer Potions">
+                    <span class="category-card-icon">
+                        <img src="assets/potions.png" alt="Potions">
+                    </span>
+                </button>
+
+                </div>
+
 
                 <!-- Pagination info en haut -->
 
