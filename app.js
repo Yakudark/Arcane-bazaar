@@ -204,20 +204,31 @@ async function fetchMeta() {
 
   // Build filters
   clearEl(catSelect);
-  const optAllC = document.createElement('option'); optAllC.value = 'all'; optAllC.textContent = 'Toutes';
+  const optAllC = document.createElement('option');
+  optAllC.value = 'all';
+  optAllC.textContent = 'Catégorie';
   catSelect.appendChild(optAllC);
   for (const c of categories) {
-    const o = document.createElement('option'); o.value = c.slug; o.textContent = c.name; catSelect.appendChild(o);
+    const o = document.createElement('option');
+    o.value = c.slug;
+    o.textContent = c.name;
+    catSelect.appendChild(o);
   }
 
   clearEl(eltSelect);
-  const optAllE = document.createElement('option'); optAllE.value = 'all'; optAllE.textContent = 'Tous';
+  const optAllE = document.createElement('option');
+  optAllE.value = 'all';
+  optAllE.textContent = 'Élément';
   eltSelect.appendChild(optAllE);
   for (const e of elements) {
-    const o = document.createElement('option'); o.value = e.id; o.textContent = `${e.icon} ${e.name}`; eltSelect.appendChild(o);
+    const o = document.createElement('option');
+    o.value = e.id;
+    o.textContent = `${e.icon} ${e.name}`;
+    eltSelect.appendChild(o);
   }
 }
 
+////////
 async function fetchFeatured() {
   let q = supabase
     .from('products')

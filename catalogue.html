@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Arcane Bazaar — Catalogue</title>
     <meta name="description" content="Catalogue des élixirs, baumes et artefacts du Arcane Bazaar" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Inter:wght@300;400;600&family=Uncial+Antiqua&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="styles.css" />
     <link rel="icon"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23c6a75b' d='M32 4l8 12 14 4-10 10 2 14-14-6-14 6 2-14L10 20l14-4z'/%3E%3C/svg%3E" />
@@ -148,76 +153,32 @@
 
 <body class="catalogue-page">
 
-    <header class="site-header">
-        <div class="container header-inner">
-            <div class="brand">
-                <img class="brand-mark" src="./assets/logo.png" alt="Arcane Bazaar" />
-                <span class="brand-name">Arcane Bazaar</span>
-            </div>
-            <nav class="nav">
-                <a href="index.html" class="nav-link">Accueil</a>
-                <a href="catalogue.html" class="nav-link">Catalogue</a>
-                <a href="#footer" class="nav-link">Crédits</a>
-                <a href="dashboard.html" id="nav-dashboard" class="nav-link hidden">Dashboard</a>
-            </nav>
-            <div class="auth-ctrls">
-                <button id="btn-login" class="btn btn-ghost">Se connecter</button>
-                <div id="user-info" class="user-info hidden">
-                    <span id="user-email"></span>
-                    <span id="user-role" class="badge"></span>
-                    <button id="btn-logout" class="btn btn-ghost">Se déconnecter</button>
-                </div>
-            </div>
-        </div>
-    </header>
-
     <main>
         <section id="catalogue" class="catalogue" aria-labelledby="catalogue-title">
             <div class="container">
-                <!-- Filtres visuels par catégorie (alimentaires/potions) -->
-                <div id="category-cards-filter" class="category-cards-filter">
-                    <button class="category-card-filter-btn" data-category="alimentaires" title="Filtrer Alimentaires">
-                        <span class="category-card-icon">
-                            <img src="assets/alimentaire.png" alt="Alimentaires">
-                        </span>
-                    </button>
-
-                    <button class="category-card-filter-btn" data-category="potions" title="Filtrer Potions">
-                        <span class="category-card-icon">
-                            <img src="assets/potion.png" alt="Potions">
-                        </span>
-                    </button>
-
-                </div>
-
 
                 <!-- Pagination info en haut -->
 
                 <div class="filters">
                     <div class="filters-row">
-                        <!-- Nouveau filtre Licence -->
                         <label class="filter">
-                            <span>Licence</span>
                             <select id="filter-licence">
-                                <option value="all">Toutes</option>
-                                <!-- Les options seront ajoutées dynamiquement plus tard -->
+                                <option value="all">Licence</option>
                             </select>
                         </label>
                         <label class="filter">
-                            <span>Catégorie</span>
                             <select id="filter-category">
-                                <option value="all">Toutes</option>
+                                <option value="all">Catégorie</option>
                             </select>
                         </label>
                         <label class="filter">
-                            <span>Élément</span>
                             <select id="filter-element">
-                                <option value="all">Tous</option>
+                                <option value="all">Élément</option>
                             </select>
                         </label>
                         <label class="filter">
-                            <span>Tri</span>
                             <select id="sort-select">
+                                <option value="default">Tri</option>
                                 <option value="price-asc">Prix: croissant</option>
                                 <option value="price-desc">Prix: décroissant</option>
                                 <option value="rarity-asc">Rareté: commun → légendaire</option>
@@ -232,6 +193,22 @@
                                     class="fa-solid fa-list"></i></button>
                         </div>
                     </div>
+                </div>
+
+                <!-- Filtres visuels par catégorie (alimentaires/potions) -->
+                <div id="category-cards-filter" class="category-cards-filter">
+                    <button class="category-card-filter-btn" data-category="alimentaires" title="Filtrer Alimentaires">
+                        <span class="category-card-icon">
+                            <img src="assets/alimentaire.png" alt="Alimentaires">
+                        </span>
+                    </button>
+
+                    <button class="category-card-filter-btn" data-category="potions" title="Filtrer Potions">
+                        <span class="category-card-icon">
+                            <img src="assets/potion.png" alt="Potions">
+                        </span>
+                    </button>
+
                 </div>
 
                 <div class="pagination-float">
@@ -279,38 +256,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- Modals copiés depuis index.html pour l'auth et le produit -->
-    <div id="auth-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-        <div class="modal-backdrop" data-close="auth"></div>
-        <div class="modal-card">
-            <button class="modal-close" data-close="auth" aria-label="Fermer">✕</button>
-            <div class="modal-body">
-                <h3 id="auth-title">Connexion</h3>
-                <div id="auth-error" class="error hidden"></div>
-                <div class="field">
-                    <label for="auth-email">Email</label>
-                    <input id="auth-email" type="email" placeholder="vous@royaume.co" autocomplete="email" />
-                </div>
-                <div class="field">
-                    <label for="auth-password">Mot de passe</label>
-                    <input id="auth-password" type="password" placeholder="••••••••" autocomplete="current-password" />
-                </div>
-                <div class="field" id="auth-password2-field">
-                    <label for="auth-password2">Confirmer le mot de passe</label>
-                    <input id="auth-password2" type="password" placeholder="••••••••" autocomplete="new-password" />
-                </div>
-                <div class="btn-row">
-                    <button id="auth-submit" class="btn btn-primary">Se connecter</button>
-                    <button id="auth-toggle" class="btn btn-ghost" data-mode="signin">Créer un compte</button>
-                </div>
-                <p id="auth-hint" class="muted">Vous pouvez créer un compte visiteur. Pour devenir
-                    <strong>admin</strong>, il
-                    faut être promu dans Supabase (voir table <code>profiles</code>).
-                </p>
-            </div>
-        </div>
-    </div>
 
     <div id="product-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-backdrop" data-close="modal"></div>
@@ -370,6 +315,7 @@
     </div>
 
     <script src="config.js"></script>
+    <script src="components.js"></script>
     <script type="module" src="app.js"></script>
 </body>
 

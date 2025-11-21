@@ -19,28 +19,6 @@
 </head>
 
 <body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <div class="brand">
-<img class="brand-mark" src="./assets/logo.png" alt="Arcane Bazaar" />
-        <span class="brand-name">Arcane Bazaar</span>
-      </div>
-      <nav class="nav">
-        <a href="#home" class="nav-link">Accueil</a>
-        <a href="catalogue.html" class="nav-link">Catalogue</a>
-        <a href="#footer" class="nav-link">Crédits</a>
-        <a href="dashboard.html" id="nav-dashboard" class="nav-link hidden">Dashboard</a>
-      </nav>
-      <div class="auth-ctrls">
-        <button id="btn-login" class="btn btn-ghost">Se connecter</button>
-        <div id="user-info" class="user-info hidden">
-          <span id="user-email"></span>
-          <span id="user-role" class="badge"></span>
-          <button id="btn-logout" class="btn btn-ghost">Se déconnecter</button>
-        </div>
-      </div>
-    </div>
-  </header>
 
   <main id="home">
     <section class="hero">
@@ -82,34 +60,6 @@
     </div>
   </footer>
 
-  <div id="auth-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-    <div class="modal-backdrop" data-close="auth"></div>
-    <div class="modal-card">
-      <button class="modal-close" data-close="auth" aria-label="Fermer">✕</button>
-      <div class="modal-body">
-        <h3 id="auth-title">Connexion</h3>
-        <div id="auth-error" class="error hidden"></div>
-        <div class="field">
-          <label for="auth-email">Email</label>
-          <input id="auth-email" type="email" placeholder="vous@royaume.co" autocomplete="email" />
-        </div>
-        <div class="field">
-          <label for="auth-password">Mot de passe</label>
-          <input id="auth-password" type="password" placeholder="••••••••" autocomplete="current-password" />
-        </div>
-        <div class="field" id="auth-password2-field">
-          <label for="auth-password2">Confirmer le mot de passe</label>
-          <input id="auth-password2" type="password" placeholder="••••••••" autocomplete="new-password" />
-        </div>
-        <div class="btn-row">
-          <button id="auth-submit" class="btn btn-primary">Se connecter</button>
-          <button id="auth-toggle" class="btn btn-ghost" data-mode="signin">Créer un compte</button>
-        </div>
-        <p id="auth-hint" class="muted">Vous pouvez créer un compte visiteur. Pour devenir <strong>admin</strong>, il
-          faut être promu dans Supabase (voir table <code>profiles</code>).</p>
-      </div>
-    </div>
-  </div>
 
   <div id="product-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-backdrop" data-close="modal"></div>
@@ -169,6 +119,7 @@
   </div>
 
   <script src="config.js"></script>
+  <script src="components.js"></script>
   <script type="module" src="app.js"></script>
 </body>
 
