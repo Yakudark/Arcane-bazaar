@@ -21,8 +21,6 @@ const modalRarity = document.getElementById("modal-rarity");
 const modalElement = document.getElementById("modal-element");
 const modalShort = document.getElementById("modal-short");
 const modalLong = document.getElementById("modal-long");
-const barPower = document.getElementById("bar-power");
-const barFinesse = document.getElementById("bar-finesse");
 const modalPrice = document.getElementById("modal-price");
 const modalAction = document.getElementById("modal-action");
 // Flavor section
@@ -49,7 +47,7 @@ const authError = document.getElementById("auth-error");
 const authTitle = document.getElementById("auth-title");
 const authPassword2Field = document.getElementById("auth-password2-field");
 const authPassword2 = document.getElementById("auth-password2");
-const dashboardSection = document.getElementById("dashboard"); // Ajout
+const dashboardSection = document.getElementById("dashboard"); 
 
 let supabase = null;
 let categories = [];
@@ -371,8 +369,6 @@ async function openModal(p) {
     modalShort.textContent = p.short_description || '';
     modalLong.textContent = p.long_description || '';
     modalPrice.textContent = `${gils(p.price_gils)} gils`;
-    barPower.style.width = `${Math.max(0, Math.min(10, p.power)) * 10}%`;
-    barFinesse.style.width = `${Math.max(0, Math.min(10, p.finesse)) * 10}%`;
     modalAction.textContent = (p.category_id && categories.find(c => c.id === p.category_id)?.slug === 'boissons') ? 'Concocter cet élixir' : 'Ajouter au sac';
 
     // Flavor fields

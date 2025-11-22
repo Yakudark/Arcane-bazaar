@@ -25,8 +25,6 @@ function showError(msg) {
   sectionCreateCategory?.classList.add("hidden");
 }
 
-
-
 async function loadProfile() {
   if (!currentUser) { currentProfile = null; isAdmin = false; return; }
   const { data } = await supabase.from('profiles').select('role,email').eq('id', currentUser.id).maybeSingle();
@@ -240,8 +238,6 @@ async function fetchProductsAdmin() {
       <td>${element ? (element.icon + ' ' + element.name) : ''}</td>
       <td style="text-align:right">${prod.price_gils ?? ''}</td>
       <td>${badgeRarity(prod.rarity)}</td>
-      <td style="text-align:center">${prod.power ?? ''}</td>
-      <td style="text-align:center">${prod.finesse ?? ''}</td>
       <td>${statusToggleBtn(prod)}</td>
       <td>
         <button class="btn btn-edit" data-id="${prod.id}" title="Modifier">✏️</button>
@@ -548,8 +544,6 @@ async function init() {
           type: formData.get('type'),
           category_id: formData.get('category_id'),
           element_id: formData.get('element_id') || null,
-          power: toInt(formData.get('power')),
-          finesse: toInt(formData.get('finesse')),
           is_published: formData.get('is_published') === 'on',
           flavor_type: formData.get('flavor_type') || null,
           flavor_profile: formData.get('flavor_profile') || null,
@@ -765,8 +759,6 @@ function setFormToEditMode(product) {
   document.getElementById('prod-element').value = product.element_id || '';
 
   document.getElementById('prod-rarete').value = product.rarity || 'Rare';
-  document.getElementById('prod-power').value = product.power ?? 3;
-  document.getElementById('prod-finesse').value = product.finesse ?? 3;
 
   document.getElementById('prod-short').value = product.short_description || '';
   document.getElementById('prod-long').value = product.long_description || '';

@@ -5,22 +5,18 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Arcane Bazaar — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Inter:wght@300;400;600&family=Uncial+Antiqua&display=swap"
+    rel="stylesheet">
+
   <link rel="stylesheet" href="styles.css" />
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23c6a75b' d='M32 4l8 12 14 4-10 10 2 14-14-6-14 6 2-14L10 20l14-4z'/%3E%3C/svg%3E" />
 </head>
 
 <body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <div class="brand">
-        <span class="brand-mark">⚜</span>
-        <span class="brand-name">Arcane Bazaar</span>
-      </div>
-      <div class="auth-ctrls">
-        <a href="index.html" id="btn-back-home" class="btn btn-ghost">Retour au site</a>
-        <button id="btn-logout" class="btn btn-ghost">Se déconnecter</button>
-      </div>
-    </div>
-  </header>
 
   <div class="dashboard-layout">
     <aside class="sidebar">
@@ -43,8 +39,6 @@
               <th>Élément</th>
               <th>Prix</th>
               <th>Rareté</th>
-              <th>Puissance</th>
-              <th>Finesse</th>
               <th>Statut</th>
               <th>Actions</th>
             </tr>
@@ -96,14 +90,6 @@
                 <option value="Épique">Épique</option>
                 <option value="Légendaire">Légendaire</option>
               </select>
-            </div>
-            <div class="field">
-              <label for="prod-power">Puissance</label>
-              <input id="prod-power" name="power" type="number" min="0" max="10" value="3" required />
-            </div>
-            <div class="field">
-              <label for="prod-finesse">Finesse</label>
-              <input id="prod-finesse" name="finesse" type="number" min="0" max="10" value="3" required />
             </div>
           </div>
           <div class="field">
@@ -217,7 +203,9 @@
     </div>
   </footer>
   <script src="config.js"></script>
+  <script src="components.js"></script>
   <script type="module" src="dashboard.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 
 </html>

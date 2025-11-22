@@ -31,7 +31,7 @@ const headerHTML = `
 const authModalHTML = `
   <div id="auth-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="auth-title">
     <div class="modal-backdrop" data-close="auth"></div>
-    <div class="modal-card">
+    <div class="modal-card-auth">
       <button class="modal-close" data-close="auth" aria-label="Fermer">✕</button>
       <div class="modal-body auth-grid">
         <div class="auth-form-col">
@@ -80,18 +80,6 @@ const productModalHTML = `
           </div>
         </div>
         <p id="modal-short" class="muted"></p>
-        <div class="stats">
-          <div class="stat"><span>Puissance</span>
-            <div class="bar">
-              <div id="bar-power" class="fill"></div>
-            </div>
-          </div>
-          <div class="stat"><span>Finesse</span>
-            <div class="bar">
-              <div id="bar-finesse" class="fill"></div>
-            </div>
-          </div>
-        </div>
         <div class="price-row">
           <span id="modal-price" class="price"></span>
           <button class="btn btn-primary" id="modal-action">Concocter cet élixir</button>
