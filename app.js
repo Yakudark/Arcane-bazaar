@@ -23,6 +23,7 @@ const modalShort = document.getElementById("modal-short");
 const modalLong = document.getElementById("modal-long");
 const modalPrice = document.getElementById("modal-price");
 const modalAction = document.getElementById("modal-action");
+
 // Flavor section
 const flavorSection = document.getElementById("flavor-section");
 const modalFlavorType = document.getElementById("modal-flavor-type");
@@ -31,6 +32,16 @@ const modalTastingNotes = document.getElementById("modal-tasting-notes");
 const modalColor = document.getElementById("modal-color");
 const modalFoodPairing = document.getElementById("modal-food-pairing");
 const modalSignatureCocktail = document.getElementById("modal-signature-cocktail");
+// Recipe / grimoire section in modal
+const recipeSection = document.getElementById("modal-recipe");
+const recipeBtn = document.getElementById("modal-show-recipe");
+const modalRecipeTitle = document.getElementById("modal-recipe-title");
+const modalRecipeSubtitle = document.getElementById("modal-recipe-subtitle");
+const modalRecipeWarning = document.getElementById("modal-recipe-warning");
+const modalRecipeVolume = document.getElementById("modal-recipe-volume");
+const modalRecipeIngredients = document.getElementById("modal-recipe-ingredients-list");
+const modalRecipeSteps = document.getElementById("modal-recipe-steps-list");
+
 // Auth controls
 const btnLogin = document.getElementById("btn-login");
 const userInfo = document.getElementById("user-info");
@@ -47,7 +58,7 @@ const authError = document.getElementById("auth-error");
 const authTitle = document.getElementById("auth-title");
 const authPassword2Field = document.getElementById("auth-password2-field");
 const authPassword2 = document.getElementById("auth-password2");
-const dashboardSection = document.getElementById("dashboard"); 
+const dashboardSection = document.getElementById("dashboard");
 
 let supabase = null;
 let categories = [];
@@ -354,6 +365,76 @@ if (prevBtn && nextBtn) {
   });
 }
 
+async function loadRecipeForModal(p) {
+  if (!recipeSection) return;
+
+  // Reset visuel
+  recipeSection.classList.add('hidden');
+  modalRecipeTitle.textContent = '';
+  modalRecipeSubtitle.textContent = '';
+  modalRecipeWarning.textContent = '';
+  modalRecipeVolume.textContent = '';
+  modalRecipeIngredients.innerHTML = '';
+  modalRecipeSteps.innerHTML = '';
+
+  // 1) Récupérer la recette liée au produit
+  const { data: recipe, error: recipeError } = await supabase
+    .from('recipes')
+    .select('id, title, base_volume_ml, warning')
+    .eq('product_id', p.id)
+    .maybeSingle();
+
+  if (recipeError || !recipe) {
+    // Pas de recette => on laisse caché
+    return;
+  }
+
+  // 2) Ingrédients
+  const { data: ingredients, error: ingError } = await supabase
+    .from('recipe_ingredients')
+    .select('name, quantity, role')
+    .eq('recipe_id', recipe.id)
+    .order('name', { ascending: true });
+
+  if (ingError) {
+    console.error('Erreur chargement ingrédients', ingError);
+  }
+
+  // 3) Étapes
+  const { data: steps, error: stepsError } = await supabase
+    .from('recipe_steps')
+    .select('step_number, description')
+    .eq('recipe_id', recipe.id)
+    .order('step_number', { ascending: true });
+
+  if (stepsError) {
+    console.error('Erreur chargement étapes', stepsError);
+  }
+
+  // 4) Injection dans le DOM
+  modalRecipeTitle.textContent = recipe.title || p.name;
+  modalRecipeSubtitle.textContent = `Recette de la potion « ${p.name} »`;
+  modalRecipeWarning.textContent = recipe.warning || '';
+  modalRecipeVolume.textContent = recipe.base_volume_ml
+    ? `Base : ${recipe.base_volume_ml} ml`
+    : '';
+
+  modalRecipeIngredients.innerHTML = (ingredients || []).map(ing => `
+    <li>
+      <strong>${ing.quantity}</strong> — ${ing.name}
+      ${ing.role ? `<span class="role"> ${ing.role}</span>` : ''}
+    </li>
+  `).join('');
+
+  modalRecipeSteps.innerHTML = (steps || []).map(step => `
+    <li>${step.description}</li>
+  `).join('');
+
+  // 5) Afficher la section grimoire
+  recipeSection.classList.remove('hidden');
+}
+
+
 async function openModal(p) {
   try {
     const { data: imgs } = await supabase.from('product_images').select('url,is_main').eq('product_id', p.id).order('is_main', { ascending: false });
@@ -380,6 +461,23 @@ async function openModal(p) {
     const has6 = setFlavorRow(modalSignatureCocktail, p.signature_cocktail);
     const showFlavor = has1 || has2 || has3 || has4 || has5 || has6;
     if (flavorSection) flavorSection.classList.toggle('hidden', !showFlavor);
+
+    // Charger la recette dans la partie grimoire (si elle existe)
+    if (recipeBtn && recipeSection) {
+      // on affiche seulement au clic sur le bouton
+      recipeSection.classList.add('hidden');
+      recipeBtn.onclick = async () => {
+        recipeBtn.disabled = true;
+        const original = recipeBtn.textContent;
+        recipeBtn.textContent = 'Chargement...';
+        await loadRecipeForModal(p);
+        recipeBtn.textContent = original;
+        recipeBtn.disabled = false;
+        if (!recipeSection.classList.contains('hidden')) {
+          recipeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      };
+    }
 
     modal.classList.remove('hidden');
   } catch (e) {

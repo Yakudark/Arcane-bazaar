@@ -3,8 +3,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const cfg = window.APP_CONFIG;
 let adminCheck, btnLogout;
 let productsTable, usersTable;
-let panelButtons, sectionListing, sectionCreate, sectionCreateCategory;
+let panelButtons, sectionListing, sectionCreate, sectionCreateCategory, sectionRecipes;
 let supabase = null;
+
 let currentSession = null;
 let currentUser = null;
 let currentProfile = null;
@@ -649,7 +650,6 @@ async function init() {
     });
   }
 
-  // Sidebar navigation
   panelButtons.forEach(btn => {
     btn.addEventListener("click", () => {
       panelButtons.forEach(b => b.classList.remove("current"));
@@ -660,19 +660,166 @@ async function init() {
         sectionListing.classList.remove("hidden");
         sectionCreate.classList.add("hidden");
         sectionCreateCategory.classList.add("hidden");
+        sectionRecipes?.classList?.add("hidden");
+
       } else if (panel === "create") {
         setFormToCreateMode();
         sectionCreate.classList.remove("hidden");
         sectionListing.classList.add("hidden");
         sectionCreateCategory.classList.add("hidden");
+        sectionRecipes?.classList?.add("hidden");
+
       } else if (panel === "create-category") {
-        setCategoryFormToCreateMode();
         sectionCreateCategory.classList.remove("hidden");
         sectionListing.classList.add("hidden");
         sectionCreate.classList.add("hidden");
+        sectionRecipes?.classList?.add("hidden");
+
+      } else if (panel === "recipes") {
+        sectionListing.classList.add("hidden");
+        sectionCreate.classList.add("hidden");
+        sectionCreateCategory.classList.add("hidden");
+        sectionRecipes.classList.remove("hidden");
+
+        loadRecipeProducts();
+
+        // Reset interface
+        ingredientsContainer.innerHTML = "";
+        stepsContainer.innerHTML = "";
+        recipeTitle.value = "";
+        recipeVolume.value = "";
+        recipeWarning.value = "";
+        recipeMsg.textContent = "";
       }
+
     });
   });
+
+
+  // ========== PANEL RECETTES ==========
+  const recipePanel = document.getElementById('dashboard-recipes');
+  const recipeSelect = document.getElementById('recipe-product');
+  const recipeTitle = document.getElementById('recipe-title');
+  const recipeVolume = document.getElementById('recipe-volume');
+  const recipeWarning = document.getElementById('recipe-warning');
+  const ingredientsContainer = document.getElementById('ingredients-container');
+  const addIngredientBtn = document.getElementById('add-ingredient');
+  const stepsContainer = document.getElementById('steps-container');
+  const addStepBtn = document.getElementById('add-step');
+  const saveRecipeBtn = document.getElementById('save-recipe');
+  const recipeMsg = document.getElementById('recipe-msg');
+
+  let currentRecipe = null;
+
+  // Charger les produits dans la liste
+  async function loadRecipeProducts() {
+    const { data } = await supabase.from('products')
+      .select('id, name')
+      .order('name', { ascending: true });
+
+    recipeSelect.innerHTML = data
+      .map(p => `<option value="${p.id}">${p.name}</option>`)
+      .join('');
+  }
+
+  // Ajouter un ingrédient
+  function addIngredientRow(ingredient = {}) {
+    const row = document.createElement('div');
+    row.classList.add('ingredient-row');
+    row.innerHTML = `
+        <div class="field-row">
+            <input type="text" placeholder="Nom" value="${ingredient.name || ''}" class="ing-name"/>
+            <input type="text" placeholder="Quantité" value="${ingredient.quantity || ''}" class="ing-qty"/>
+            <input type="text" placeholder="Rôle" value="${ingredient.role || ''}" class="ing-role"/>
+            <button class="btn btn-delete small remove-ing">🗑️</button>
+        </div>
+    `;
+    row.querySelector('.remove-ing').addEventListener('click', () => row.remove());
+    ingredientsContainer.appendChild(row);
+  }
+
+  // Ajouter une étape
+  function addStepRow(step = {}) {
+    const row = document.createElement('div');
+    row.classList.add('step-row');
+    row.innerHTML = `
+        <div class="field-row">
+            <textarea rows="2" class="step-desc">${step.description || ''}</textarea>
+            <button class="btn btn-delete small remove-step">🗑️</button>
+        </div>
+    `;
+    row.querySelector('.remove-step').addEventListener('click', () => row.remove());
+    stepsContainer.appendChild(row);
+  }
+
+  addIngredientBtn.addEventListener('click', () => addIngredientRow());
+  addStepBtn.addEventListener('click', () => addStepRow());
+
+  // Enregistrer recette
+  saveRecipeBtn.addEventListener('click', async () => {
+    recipeMsg.textContent = "";
+
+    const product_id = recipeSelect.value;
+    const title = recipeTitle.value;
+    const base_volume_ml = recipeVolume.value;
+    const warning = recipeWarning.value;
+
+    // 1) Vérifier si une recette existe déjà
+    const { data: existing } = await supabase
+      .from('recipes')
+      .select('*')
+      .eq('product_id', product_id)
+      .maybeSingle();
+
+    let recipe;
+
+    if (!existing) {
+      // créer
+      const { data: created } = await supabase
+        .from('recipes')
+        .insert([{ product_id, title, base_volume_ml, warning }])
+        .select()
+        .single();
+      recipe = created;
+    } else {
+      // update
+      const { data: updated } = await supabase
+        .from('recipes')
+        .update({ title, base_volume_ml, warning })
+        .eq('id', existing.id)
+        .select()
+        .single();
+      recipe = updated;
+
+      // supprimer anciens ingrédients & étapes
+      await supabase.from('recipe_ingredients').delete().eq('recipe_id', recipe.id);
+      await supabase.from('recipe_steps').delete().eq('recipe_id', recipe.id);
+    }
+
+    // 2) Sauvegarder ingrédients
+    const ingredients = [...ingredientsContainer.querySelectorAll('.ingredient-row')].map(row => ({
+      recipe_id: recipe.id,
+      name: row.querySelector('.ing-name').value,
+      quantity: row.querySelector('.ing-qty').value,
+      role: row.querySelector('.ing-role').value
+    }));
+
+    if (ingredients.length)
+      await supabase.from('recipe_ingredients').insert(ingredients);
+
+    // 3) Sauvegarder étapes
+    const steps = [...stepsContainer.querySelectorAll('.step-row')].map((row, idx) => ({
+      recipe_id: recipe.id,
+      step_number: idx + 1,
+      description: row.querySelector('.step-desc').value
+    }));
+
+    if (steps.length)
+      await supabase.from('recipe_steps').insert(steps);
+
+    recipeMsg.textContent = "✓ Recette enregistrée !";
+  });
+
 
 
   // Logout handler
@@ -792,6 +939,7 @@ window.addEventListener('DOMContentLoaded', () => {
   sectionListing = document.getElementById("dashboard-listing");
   sectionCreate = document.getElementById("dashboard-create");
   sectionCreateCategory = document.getElementById("dashboard-create-category");
+  sectionRecipes = document.getElementById("dashboard-recipes");
   categoriesTable = document.getElementById("categories-table")?.querySelector("tbody"); // 🔹
   init();
 });

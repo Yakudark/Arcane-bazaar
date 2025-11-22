@@ -1048,3 +1048,170 @@ body {
 #categories-table td:nth-child(3) {
   width: 25%;
 }
+
+/* --- Grimoire dans la modale produit --- */
+
+.recipe-grimoire {
+  margin-top: 1.5rem;
+  position: relative;
+  padding: 0;
+}
+
+/* Forcer une couleur lisible dans le grimoire */
+.recipe-grimoire,
+.recipe-grimoire * {
+  color: #3c2818;
+}
+
+/* On garde les exceptions déjà définies */
+.recipe-warning {
+  color: #8b1e1e;
+}
+
+.recipe-meta {
+  color: #6b5437;
+}
+
+#modal-recipe-ingredients-list li .role {
+  color: #84623f;
+}
+
+
+.recipe-grimoire.hidden {
+  display: none;
+}
+
+.recipe-grimoire::before,
+.recipe-grimoire::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+.recipe-grimoire::before {
+  background: radial-gradient(circle at top left, rgba(255,255,255,0.3), transparent 60%),
+              radial-gradient(circle at bottom right, rgba(255,220,150,0.25), transparent 60%);
+  opacity: 0.9;
+}
+
+.recipe-grimoire::after {
+  border-radius: 16px;
+  border: 1px solid rgba(90, 60, 30, 0.4);
+  mix-blend-mode: multiply;
+}
+
+.recipe-inner {
+  position: relative;
+  z-index: 1;
+  background: #f7f0e2;
+  background-image:
+    linear-gradient(to bottom, rgba(255,255,255,0.4), transparent 30%),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(120,80,40,0.06) 0,
+      rgba(120,80,40,0.06) 24px,
+      transparent 24px,
+      transparent 26px
+    );
+  border-radius: 14px;
+  padding: 1.5rem 1.75rem;
+  box-shadow:
+    0 16px 32px rgba(0,0,0,0.25),
+    0 0 0 1px rgba(60, 40, 20, 0.15);
+}
+
+.recipe-title {
+  font-family: "Cormorant Garamond", "Times New Roman", serif;
+  font-size: 1.6rem;
+  margin-bottom: 0.2rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #3c2818;
+}
+
+.recipe-subtitle {
+  font-style: italic;
+  color: #7a5a35;
+  margin-bottom: 0.5rem;
+}
+
+.recipe-warning {
+  color: #8b1e1e;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.recipe-warning::before {
+  content: "⚠ ";
+}
+
+.recipe-meta {
+  font-size: 0.9rem;
+  color: #6b5437;
+  margin-bottom: 1rem;
+}
+
+.recipe-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.recipe-column {
+  flex: 1 1 220px;
+}
+
+.recipe-column h4 {
+  font-family: "Cormorant Garamond", "Times New Roman", serif;
+  font-size: 1.1rem;
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3c2818;
+  border-bottom: 1px solid rgba(80, 50, 20, 0.35);
+  padding-bottom: 0.2rem;
+}
+
+#modal-recipe-ingredients-list,
+#modal-recipe-steps-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+#modal-recipe-ingredients-list li {
+  margin-bottom: 0.3rem;
+  line-height: 1.35;
+}
+
+#modal-recipe-ingredients-list li strong {
+  color: #3c2818;
+}
+
+#modal-recipe-ingredients-list li .role {
+  color: #84623f;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+#modal-recipe-steps-list {
+  counter-reset: step;
+}
+
+#modal-recipe-steps-list li {
+  position: relative;
+  margin-bottom: 0.6rem;
+  padding-left: 1.8rem;
+}
+
+#modal-recipe-steps-list li::before {
+  counter-increment: step;
+  content: counter(step) ".";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-weight: 700;
+  color: #5a3b21;
+}

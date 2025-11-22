@@ -24,6 +24,10 @@
         <button class="sidebar-link current" data-panel="listing">📃 Listing</button>
         <button class="sidebar-link" data-panel="create">✚ Créer produit</button>
         <button class="sidebar-link" data-panel="create-category">📂 Créer catégorie</button>
+        <button class="sidebar-link" data-panel="recipes">🧪 Recette</button>
+        <button class="sidebar-link" data-panel="users">👥 Utilisateurs</button>
+        <button class="sidebar-link" data-panel="orders">🛒 Commandes</button>
+        <button class="sidebar-link" data-panel="settings">⚙️ Paramètres</button>
       </nav>
     </aside>
     <div class="main-content">
@@ -181,6 +185,53 @@
           <tbody><!-- Catégories JS --></tbody>
         </table>
       </section>
+
+      <section id="dashboard-recipes" class="dashboard-panel hidden">
+        <h2>Recette de la Potion</h2>
+
+        <!-- Sélection du produit -->
+        <div class="field">
+          <label for="recipe-product">Potion associée</label>
+          <select id="recipe-product" name="recipe_product"></select>
+        </div>
+
+        <!-- Informations générales -->
+        <div class="field">
+          <label for="recipe-title">Nom de la recette</label>
+          <input id="recipe-title" type="text" />
+        </div>
+
+        <div class="field">
+          <label for="recipe-volume">Volume total (ml)</label>
+          <input id="recipe-volume" type="number" />
+        </div>
+
+        <div class="field">
+          <label for="recipe-warning">Avertissements</label>
+          <textarea id="recipe-warning" rows="2"></textarea>
+        </div>
+
+        <hr />
+
+        <!-- Ingredients dynamiques -->
+        <h3>Ingrédients</h3>
+        <div id="ingredients-container"></div>
+        <button id="add-ingredient" class="btn btn-secondary">➕ Ajouter un ingrédient</button>
+
+        <hr />
+
+        <!-- Étapes dynamiques -->
+        <h3>Étapes</h3>
+        <div id="steps-container"></div>
+        <button id="add-step" class="btn btn-secondary">➕ Ajouter une étape</button>
+
+        <hr />
+
+        <!-- Enregistrement -->
+        <button id="save-recipe" class="btn btn-primary">💾 Enregistrer la recette</button>
+        <p id="recipe-msg" class="muted"></p>
+      </section>
+
 
 
       </section>

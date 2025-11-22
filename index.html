@@ -99,6 +99,33 @@
             <dd id="modal-signature-cocktail"></dd>
           </dl>
         </div>
+        <button id="modal-show-recipe" class="btn btn-ghost" type="button">
+          🧪 Voir la recette détaillée
+        </button>
+        
+        <section id="modal-recipe" class="recipe-grimoire hidden">
+          <div class="recipe-inner">
+            <h3 class="recipe-title" id="modal-recipe-title"></h3>
+            <p class="recipe-subtitle" id="modal-recipe-subtitle"></p>
+            <p class="recipe-warning" id="modal-recipe-warning"></p>
+        
+            <p class="recipe-meta">
+              <span id="modal-recipe-volume" class="recipe-volume"></span>
+            </p>
+        
+            <div class="recipe-columns">
+              <div class="recipe-column">
+                <h4>Ingrédients</h4>
+                <ul id="modal-recipe-ingredients-list"></ul>
+              </div>
+              <div class="recipe-column">
+                <h4>Préparation</h4>
+                <ol id="modal-recipe-steps-list"></ol>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <div class="long-desc">
           <h4>Détails</h4>
           <p id="modal-long"></p>
